@@ -2,6 +2,7 @@
 
 An easy way to keep your users' passwords secure.
 
+* http://bcrypt-ruby.rubyforge.org/
 * http://github.com/codahale/bcrypt-ruby/tree/master
 
 [![Build Status](https://travis-ci.org/codahale/bcrypt-ruby.png?branch=master)](https://travis-ci.org/codahale/bcrypt-ruby)
@@ -17,81 +18,92 @@ security experts is not a professional response to risk.
 
 `bcrypt()` allows you to easily harden your application against these kinds of attacks.
 
-*Note*: JRuby versions of the bcrypt gem `<= 2.1.3` had a [security
+*Note*: JRuby versions of bcrypt-ruby `<= 2.1.3` had a [security
 vulnerability](http://www.mindrot.org/files/jBCrypt/internat.adv) that
 was fixed in `>= 2.1.4`. If you used a vulnerable version to hash
 passwords with international characters in them, you will need to
-re-hash those passwords. This vulnerability only affected the JRuby gem.
+re-hash those passwords. This vulernability only affected the JRuby gem.
 
 ## How to install bcrypt
 
-    gem install bcrypt
+    gem install bcrypt-ruby
 
-The bcrypt gem is available on the following ruby platforms:
+The bcrypt-ruby gem is available on the following ruby platforms:
 
 * JRuby
-* RubyInstaller 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, and 2.5 builds on Windows
-* Any 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, or 2.5 Ruby on a BSD/OS X/Linux system with a compiler
+* RubyInstaller 1.9 builds on win32
+* Any 1.8 or 1.9 ruby on a BSD/OSX/Linux system with a compiler
 
 ## How to use `bcrypt()` in your Rails application
 
 *Note*: Rails versions >= 3 ship with `ActiveModel::SecurePassword` which uses bcrypt-ruby.
-`has_secure_password` [docs](http://api.rubyonrails.org/classes/ActiveModel/SecurePassword/ClassMethods.html#method-i-has_secure_password)
+`has_secure_password` [docs](http://api.rubyonrails.org/classes/ActiveModel/SecurePassword/ClassMethods.html#method-i-has_secure_password) 
 implements a similar authentication strategy to the code below.
 
 ### The _User_ model
-```ruby
-require 'bcrypt'
 
-class User < ActiveRecord::Base
-  # users.password_hash in the database is a :string
-  include BCrypt
+    require 'bcrypt'
 
-  def password
-    @password ||= Password.new(password_hash)
-  end
+    class User < ActiveRecord::Base
+      # users.password_hash in the database is a :string
+      include BCrypt
 
-  def password=(new_password)
-    @password = Password.create(new_password)
-    self.password_hash = @password
-  end
-end
-```
+      def password
+        @password ||= Password.new(password_hash)
+      end
+
+      def password=(new_password)
+        @password = Password.create(new_password)
+        self.password_hash = @password
+      end
+    end
+
 ### Creating an account
-```ruby
-def create
-  @user = User.new(params[:user])
-  @user.password = params[:password]
-  @user.save!
-end
-```
+
+    def create
+      @user = User.new(params[:user])
+      @user.password = params[:password]
+      @user.save!
+    end
+
 ### Authenticating a user
-```ruby
-def login
-  @user = User.find_by_email(params[:email])
-  if @user.password == params[:password]
-    give_token
-  else
-    redirect_to home_url
-  end
-end
-```
+
+    def login
+      @user = User.find_by_email(params[:email])
+      if @user.password == params[:password]
+        give_token
+      else
+        redirect_to home_url
+      end
+    end
+
+### If a user forgets their password?
+
+    # assign them a random one and mail it to them, asking them to change it
+    def forgot_password
+      @user = User.find_by_email(params[:email])
+      random_password = Array.new(10).map { (65 + rand(58)).chr }.join
+      @user.password = random_password
+      @user.save!
+      Mailer.create_and_deliver_password_change(@user, random_password)
+    end
+
 ## How to use bcrypt-ruby in general
-```ruby
-require 'bcrypt'
 
-my_password = BCrypt::Password.create("my password")
-#=> "$2a$10$vI8aWBnW3fID.ZQ4/zo1G.q1lRps.9cGLcZEiGDMVr5yUP1KUOYTa"
+    require 'bcrypt'
 
-my_password.version              #=> "2a"
-my_password.cost                 #=> 10
-my_password == "my password"     #=> true
-my_password == "not my password" #=> false
+    my_password = BCrypt::Password.create("my password")
+      #=> "$2a$10$vI8aWBnW3fID.ZQ4/zo1G.q1lRps.9cGLcZEiGDMVr5yUP1KUOYTa"
 
-my_password = BCrypt::Password.new("$2a$10$vI8aWBnW3fID.ZQ4/zo1G.q1lRps.9cGLcZEiGDMVr5yUP1KUOYTa")
-my_password == "my password"     #=> true
-my_password == "not my password" #=> false
-```
+    my_password.version              #=> "2a"
+    my_password.cost                 #=> 10
+    my_password == "my password"     #=> true
+    my_password == "not my password" #=> false
+
+    my_password = BCrypt::Password.new("$2a$10$vI8aWBnW3fID.ZQ4/zo1G.q1lRps.9cGLcZEiGDMVr5yUP1KUOYTa")
+    my_password == "my password"     #=> true
+    my_password == "not my password" #=> false
+
 Check the rdocs for more details -- BCrypt, BCrypt::Password.
 
 ## How `bcrypt()` works
@@ -160,15 +172,15 @@ stateless authentication architecture (e.g., HTTP Basic Auth), you will want to 
 server load and keep your request times down. This will lower the security provided you, but there are few alternatives.
 
 To change the default cost factor used by bcrypt-ruby, use `BCrypt::Engine.cost = new_value`:
-```ruby
-BCrypt::Password.create('secret').cost
-  #=> 10, the default provided by bcrypt-ruby
 
-# set a new default cost
-BCrypt::Engine.cost = 8
-BCrypt::Password.create('secret').cost
-  #=> 8
-```
+    BCrypt::Password.create('secret').cost
+      #=> 10, the default provided by bcrypt-ruby
+
+    # set a new default cost
+    BCrypt::Engine.cost = 8
+    BCrypt::Password.create('secret').cost
+      #=> 8
+
 The default cost can be overridden as needed by passing an options hash with a different cost:
 
     BCrypt::Password.create('secret', :cost => 6).cost  #=> 6

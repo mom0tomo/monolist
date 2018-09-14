@@ -1,5 +1,5 @@
 current directory: /home/ec2-user/environment/monolist/vendor/bundle/ruby/2.4.0/gems/mysql2-0.4.10/ext/mysql2
-/usr/local/rvm/rubies/ruby-2.4.1/bin/ruby -r ./siteconf20180910-319-16028i1.rb extconf.rb
+/usr/local/rvm/rubies/ruby-2.4.1/bin/ruby -r ./siteconf20180914-13215-1p2wimy.rb extconf.rb
 checking for rb_absint_size()... yes
 checking for rb_absint_singlebit_p()... yes
 checking for ruby/thread.h... yes
@@ -58,4 +58,4 @@ linking shared-object mysql2/mysql2.so
 
 current directory: /home/ec2-user/environment/monolist/vendor/bundle/ruby/2.4.0/gems/mysql2-0.4.10/ext/mysql2
 make "DESTDIR=" install
-/usr/bin/install -c -m 0755 mysql2.so ./.gem.20180910-319-azngh9/mysql2
+/usr/bin/install -c -m 0755 mysql2.so ./.gem.20180914-13215-1m0gowy/mysql2

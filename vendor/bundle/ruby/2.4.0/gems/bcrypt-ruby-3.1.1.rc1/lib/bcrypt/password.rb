@@ -43,7 +43,7 @@ module BCrypt
       def create(secret, options = {})
         cost = options[:cost] || BCrypt::Engine.cost
         raise ArgumentError if cost > 31
-        Password.new(BCrypt::Engine.hash_secret(secret, BCrypt::Engine.generate_salt(cost)))
+        Password.new(BCrypt::Engine.hash_secret(secret, BCrypt::Engine.generate_salt(cost), cost))
       end
 
       def valid_hash?(h)
@@ -80,7 +80,7 @@ module BCrypt
     # Splits +h+ into version, cost, salt, and hash and returns them in that order.
     def split_hash(h)
       _, v, c, mash = h.split('$')
-      return v.to_str, c.to_i, h[0, 29].to_str, mash[-31, 31].to_str
+      return v, c.to_i, h[0, 29].to_str, mash[-31, 31].to_str
     end
   end
 

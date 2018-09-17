@@ -1,2 +1,0 @@
-class Want < Ownership
-end

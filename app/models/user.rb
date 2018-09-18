@@ -35,6 +35,6 @@ class User < ApplicationRecord
   end
 
   def have?(item)
-    self.have_items.inlude?(item)
+    self.have_items.include?(item)
   end
 end
